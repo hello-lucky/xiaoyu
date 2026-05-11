@@ -10,8 +10,8 @@ favicon        = "img/favicon.png"
 SortBy              = "default"
 
 [footer]
-    since      = 2020
-    customText = ""
+    since      = 2025
+    customText = "Wishing you good luck and happiness every day!"
 
 [dateFormat]
     published   = ":date_full"
@@ -24,7 +24,7 @@ SortBy              = "default"
 
 [article]
     headingAnchor = false
-    math          = false
+    math          = true
     readingTime   = true
 
     [article.license]

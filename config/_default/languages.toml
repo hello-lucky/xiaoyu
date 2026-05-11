@@ -2,5 +2,10 @@
 [en]
     label     = "English"
     direction = "ltr"
-    title     = "Example Site"
+    title     = "xiaoyu"
     weight    = 1
+[zh]
+    label     = "中文"
+    direction = "ltr"
+    title     = "小雨"
+    weight    = 2
