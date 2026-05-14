@@ -1,0 +1,44 @@
+1.博客文章 ( post/ )
+# 创建新文章
+hugo new post/my-first-post/index.md
+
+---
+title: 文章标题
+date: 2026-05-11
+categories: ["分类名称"]
+tags: ["标签1", "标签2"]
+image: cover.jpg          # 封面图片
+---
+文章内容...
+
+2.友链配置
+links:
+  - title: GitHub
+    description: 描述文字
+    website: https://github.com
+    image: https://example.com/logo.png
+
+3.系统分类( categories/ )
+---
+title: 分类名称
+description: 分类描述
+style:
+    background: "#2a9d8f"  # 徽章背景色
+    color: "#fff"          # 徽章文字色
+---
+
+
+# 1. 创建新文章
+hugo new post/2026-05-11-my-post/index.md
+
+# 2. 创建新页面
+hugo new page/about/index.md
+
+# 3. 创建新分类
+hugo new categories/my-category/_index.md
+
+# 4. 启动开发服务器预览
+hugo server
+
+
+

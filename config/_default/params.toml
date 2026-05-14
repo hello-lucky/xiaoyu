@@ -11,7 +11,8 @@ SortBy              = "default"
 
 [footer]
     since      = 2025
-    customText = "Wishing you good luck and happiness every day!"
+    customText = "Wishing you good luck and happiness every day!今天小雨，愿每一次阅读都带给你温暖与收获"
+    copyright  = "今天小雨，愿每一次阅读都带给你温暖与收获"
 
 [dateFormat]
     published   = ":date_full"
