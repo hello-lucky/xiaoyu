@@ -1,5 +1,5 @@
 ---
-title: "Stu"
+title: "stu"
 image: 1.png
 style:
     background: "#2a9d8f"
