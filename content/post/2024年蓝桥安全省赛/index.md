@@ -1,7 +1,14 @@
 ---
-titile:"2024年蓝桥安全省赛"
+title: "2024蓝桥安全省赛"
+description: 
+slug: 
+date: 
+image: 
 categories:
     - ctf
+tags:
+    - 
+weight: 1
 ---
 
 ### 一、安全知识
