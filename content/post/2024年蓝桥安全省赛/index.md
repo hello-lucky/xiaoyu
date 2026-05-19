@@ -141,15 +141,15 @@ D. 删除网站.svn文件
 
 小蓝同学在开发网站时了解到了一个***\*爬虫协议\****，该协议指网站可建立一个特别的txt文件来告诉搜索引擎哪些页面可以抓取，哪些页面不能抓取，而搜索引擎则通过读取该txt文件来识别这个页面是否允许被抓取。爬虫协议并不是一个规范，而只是约定俗成的，所以并不能保证网站的隐私。
 
-![](https://xiaoyuwell.top/PicGo/20260518202838749.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144253980.png)
 
 尝试访问robots
 
-![](https://xiaoyuwell.top/PicGo/20260518202928735.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144314554.png)
 
-![](https://xiaoyuwell.top/PicGo/20260518202947032.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144331161.png)
 
-![](https://xiaoyuwell.top/PicGo/20260518203006011.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144412740.png)
 
 
 
@@ -159,19 +159,19 @@ D. 删除网站.svn文件
 
 打开数据包，过滤http，搜索flag，发现一个请求cat flag
 
-![](https://xiaoyuwell.top/PicGo/20260518203100711.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144436762.png)
 
 数据流追踪，找到返回内容是一个base64编码
 
-![](https://xiaoyuwell.top/PicGo/20260518203125447.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144453345.png)
 
 解码
 
-![](https://xiaoyuwell.top/PicGo/20260518203141935.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144508425.png)
 
 #### 2.缺失的数据（dwt盲水印）
 
-![](https://xiaoyuwell.top/PicGo/20260518203215458.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144526980.png)
 
 1)：破解orign压缩包：打开压缩包发现压缩包里面的serect.txt是密码字典，未加密，可以解压出来，然后用serect.txt字典破解压缩包orign.zip，得到a.png也就是原始图片。
 
@@ -350,15 +350,15 @@ if __name__ == '__main__':
 
 CyberChef是一个用于加密、编码、压缩和数据分析的网络应用程序，被称为“网络版瑞士军刀”，旨在使技术和非技术分析人员能够以复杂的方式操作数据，而无需处理复杂的工具或算法。
 
-![](https://xiaoyuwell.top/PicGo/20260518203430664.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144548689.png)
 
-![](https://xiaoyuwell.top/PicGo/20260518203442528.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144606634.png)
 
 #### 2.Theorem
 
-![](https://xiaoyuwell.top/PicGo/20260518203520417.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144625337.png)
 
-![](https://xiaoyuwell.top/PicGo/20260518203533152.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144638804.png)
 
 ```python
 #task.py
@@ -392,7 +392,7 @@ print(c)
 
 这是 RSA 密码破解 题目，利用了 q = next_prime(p) 的特性（p 和 q 非常接近）：
 
-![](https://xiaoyuwell.top/PicGo/20260518203729543.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144733105.png)
 
 1. 恢复 p 和 q ：由于 p ≈ q，可以通过对 n 开平方得到近似值，然后微调找到真正的 p
 2. 计算 φ(n) ：φ = (p-1)(q-1)
@@ -404,7 +404,7 @@ Yafu 获取p，q
 
 pq非常接近时使用yafu
 
-![](https://xiaoyuwell.top/PicGo/20260518203804184.png)
+![](https://img.xiaoyuwell.top/PicGo/20260519144705842.png)
 
 ```python
 #分解 n = p*q

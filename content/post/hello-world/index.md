@@ -12,3 +12,5 @@ weight: 1       # You can add weight to some posts to override the default sorti
 ---
 
 Hello world！！！
+
+![](https://img.xiaoyuwell.top/PicGo/【哲风壁纸】少年毛泽东-山水.png)
