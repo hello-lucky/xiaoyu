@@ -1,10 +1,10 @@
 ---
 title: Links
 links:
-  - title: GitHub
-    description: GitHub is the world's largest software development platform.
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+  - title: Chifan‘s Blog
+    description: 勿忘吃饭，勿忘开心，勿忘做自己
+    website: https://blog.chifan.de/
+    image: https://weavatar.com/avatar/b94b6329d351df1cf9433358aabe700e
 menu:
   main: 
     weight: 4
@@ -14,20 +14,3 @@ menu:
 comments: false
 ---
 
-To use this feature, add `links` section to frontmatter.
-
-This page's frontmatter:
-
-```yaml
-links:
-  - title: GitHub
-    description: GitHub is the world's largest software development platform.
-    website: https://github.com
-    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-  - title: TypeScript
-    description: TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
-    website: https://www.typescriptlang.org
-    image: ts-logo-128.jpg
-```
-
-`image` field accepts both local and external images.
