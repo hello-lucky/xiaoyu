@@ -1,10 +1,14 @@
 ---
-title：hestrike_ai
-decription:"项目解析"
+title: hestrike-ai
+description: 
+slug: 
+date: 
+image: 
 categories:
     - AI
 tags:
-    -
+    - AI
+weight: 1    
 ---
 
 
