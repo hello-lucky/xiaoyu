@@ -817,25 +817,382 @@ src/providers/是 React 里的“全局/局部状态仓库”
   eslint.config.mjs
 ```
 
-## 四、后端分析
+## 四、后端分析--\backend
+
+### 1.后端--自动化渗透测试调度中心
+
+用户在前端创建一个 Flow，也就是一次渗透测试任务。后端会做这些事：
+
+1. 验证用户身份。
+2. 创建 Flow 记录。
+3. 选择 LLM Provider，比如 OpenAI、Anthropic、Gemini、Ollama 等。
+4. 创建 Docker 容器作为安全执行环境。
+5. 让 AI Agent 拆解任务、搜索信息、写代码、执行命令、分析结果。
+6. 把执行过程写入数据库。
+7. 通过 GraphQL Subscription 实时推送进度给前端。
+
+```
+pentagi-2.1.0\backend\cmd\pentagi\main.go
+```
+
+```
+读取配置
+  ↓
+初始化日志、观测系统
+  ↓
+连接 PostgreSQL
+  ↓
+执行数据库迁移
+  ↓
+初始化 Docker Client
+  ↓
+初始化 LLM Providers
+  ↓
+恢复未完成的 Flow
+  ↓
+创建 Gin Router
+  ↓
+启动 HTTP/HTTPS 服务
+```
+
+### 2.backend 顶层目录
+
+```
+backend/
+├── cmd/
+├── docs/
+├── fern/
+├── gqlgen/
+├── migrations/
+├── pkg/
+├── sqlc/
+├── go.mod
+└── go.sum
+```
+
+1. cmd/--main.go
+
+	```
+	backend/cmd/
+	├── pentagi/      主后端服务入口
+	├── installer/    安装向导
+	├── ctester/      Docker/容器测试工具
+	├── ftester/      LLM function calling 测试工具
+	└── etester/      embedding/向量搜索测试工具
+	```
+
+2. docs/后端文档目录，包含很多设计说明和使用说明，帮助理解配置、数据库、Docker 执行和 Flow 运行逻辑
+3. fern/和 API 文档或 SDK 生成有关
+4. gqlgen/GraphQL 代码生成配置
+
+```
+GraphQL schema 在：
+backend/pkg/graph/schema.graphqls
+```
+
+5. migrations/数据库迁移
+
+```
+backend/migrations/
+├── migrations.go
+└── sql/.sql 文件，用来创建和修改数据库表、枚举、索引、权限等
+```
+
+6. sqlc/SQLC 查询定义
+
+`sqlc` 是一个 Go 工具，它根据 SQL 文件生成类型安全的 Go 数据库访问代码
+
+```
+backend/sqlc/
+├── sqlc.yml
+└── models/
+```
+
+​    7.pkg/
+
+```
+backend/pkg/
+├── config/        配置读取
+├── server/         HTTP REST / GraphQL API 层
+├── controller/     Flow、Task、Agent 调度核心
+├── providers/      大模型 Provider 接入
+├── tools/          Agent 可调用工具
+├── docker/         Docker 容器封装
+├── database/       数据库访问层
+├── graph/          GraphQL 层
+├── templates/      Prompt 模板
+├── csum/           上下文压缩总结
+├── observability/  日志、Tracing、Langfuse、OpenTelemetry
+├── graphiti/       知识图谱客户端
+├── flowfiles/      Flow 文件管理
+├── resources/      用户资源文件管理
+├── terminal/       终端输出处理
+├── queue/          队列
+├── schema/         JSON Schema 工具
+├── system/         系统平台工具
+├── cast/           消息链解析/转换
+└── version/        版本信息
+```
+
+
 
 
 
 ## 五、数据库分析
 
-## 六、一次flow运行
+1.Docker 数据库配置：pentagi-2.1.0/docker-compose.yml
 
-## 七、认证系统
+2.数据库连接配置：pentagi-2.1.0/backend/pkg/config/config.go:21
 
-## 八、配置文件
+3.后端启动时怎么连接数据库和跑迁移：pentagi-2.1.0/backend/cmd/pentagi/main.go:80
 
-## 九、Docker Compose
+4.最初始的数据库表：pentagi-2.1.0/backend/migrations/sql/20241026_115120_initial_state.sql
 
-## 十、observability-监控相关
+5.SQLC 配置：pentagi-2.1.0/backend/sqlc/sqlc.yml
+
+6.具体查询：
+backend/sqlc/models/flows.sql
+pentagi-2.1.0/backend/sqlc/models/users.sql
+pentagi-2.1.0/backend/sqlc/models/knowledge.sql
+
+......
 
 
 
-## 十一、Langfuse-LLM观测
+## 六、认证系统
+
+```
+backend/pkg/server/
+├── router.go                 # 注册认证路由、中间件、Cookie session
+├── middleware.go             # 本地用户限制、禁缓存中间件
+├── auth/
+│   ├── auth_middleware.go    # 核心认证中间件：Cookie / Bearer Token
+│   ├── session.go            # Cookie 和 JWT 签名密钥生成
+│   ├── api_token_jwt.go      # API Token JWT 签发和校验
+│   ├── api_token_id.go       # 生成 10 位 token_id
+│   ├── api_token_cache.go    # API Token 状态/权限缓存
+│   ├── users_cache.go        # 用户状态/哈希缓存
+│   └── permissions.go        # 权限检查工具
+├── services/
+│   ├── auth.go               # 登录、登出、OAuth、/info
+│   ├── users.go              # 用户管理、改密码
+│   └── api_tokens.go         # REST API Token 管理
+├── oauth/
+│   ├── client.go             # OAuth 抽象接口
+│   ├── google.go             # Google 登录
+│   └── github.go             # GitHub 登录
+└── models/
+    ├── users.go              # 用户、登录、改密模型
+    ├── api_tokens.go         # API Token 模型
+    └── init.go               # 校验器，包括密码复杂度
+
+frontend/src/
+├── providers/user-provider.tsx                 # 前端登录状态管理
+├── features/authentication/login-form.tsx      # 登录表单
+├── features/authentication/password-change-form.tsx
+├── pages/login.tsx
+├── pages/oauth-result.tsx
+├── pages/settings/settings-api-tokens.tsx
+├── components/routes/protected-route.tsx
+├── components/routes/public-route.tsx
+├── lib/axios.ts                                # REST 请求，自动带 Cookie
+└── lib/apollo.ts                               # GraphQL / WebSocket 客户端
+```
+
+![](https://img.xiaoyuwell.top/PicGo/20260630234959386.png)
+
+## 七、配置文件
+
+```
+pentagi-2.1.0/
+├── .env
+│   └── 本机真实环境配置文件，存放 API Key、数据库密码、端口等敏感配置，不要上传 GitHub。
+│
+├── .env.example
+│   └── 环境变量模板，第一次部署时通常复制为 .env 再修改。
+│
+├── docker-compose.yml
+│   └── 核心 Docker 启动配置，启动 PentAGI 主服务、PostgreSQL/pgvector、scraper 等。
+│
+├── docker-compose-observability.yml
+│   └── 可选监控配置，启动 Grafana、Loki、Jaeger、VictoriaMetrics、OpenTelemetry。
+│
+├── docker-compose-langfuse.yml
+│   └── 可选 LLM 观测平台配置，用于查看大模型调用、trace、成本等。
+│
+├── docker-compose-graphiti.yml
+│   └── 可选知识图谱配置，启动 Neo4j + Graphiti，给 Agent 提供知识记忆能力。
+│
+├── Dockerfile
+│   └── 构建生产镜像：先构建前端，再构建 Go 后端，最后打包运行环境。
+│
+├── backend/
+│   └── Go 后端主目录，负责 API、认证、数据库、AI Agent、工具执行等。
+│
+├── frontend/
+│   └── React + TypeScript 前端主目录，负责浏览器页面和用户操作界面。
+│
+├── observability/
+│   └── 监控系统配置目录，包含 Grafana 面板、Loki 日志、Jaeger 链路追踪等。
+│
+├── examples/
+│   └── 示例配置目录，主要是不同 LLM Provider 的 YAML 示例配置。
+│
+├── scripts/
+│   └── 脚本目录，例如容器入口脚本、构建辅助脚本。
+│
+├── build/
+│   └── 构建相关文件目录。
+│
+├── licenses/
+│   └── 第三方依赖许可证信息。
+│
+├── README.md
+│   └── 项目说明文档，介绍功能、安装、运行方式。
+│
+├── AGENTS.md
+│   └── 给 AI 编码助手看的项目工作规则。
+│
+└── DEPLOY_LINUX.md
+    └── Linux 部署说明。
+```
+
+## 八、Docker Compose
+
+```
+E:\pentest\github\pentagi-2.1.0
+├── docker-compose.yml
+│   主 Docker Compose 文件，启动 PentAGI 核心服务
+├── docker-compose-langfuse.yml
+│   可选 Langfuse LLM 追踪分析栈
+├── docker-compose-observability.yml
+│   可选 Grafana / OTEL / Loki / Jaeger 监控栈
+├── docker-compose-graphiti.yml
+│   可选 Graphiti / Neo4j 知识图谱栈
+├── Dockerfile
+│   构建 PentAGI 主镜像
+├── .env.example
+│   环境变量模板
+├── backend
+│   Go 后端，REST、GraphQL、数据库、agent、工具调用逻辑
+├── frontend
+│   React + TypeScript 前端
+├── observability
+│   Grafana、OpenTelemetry、Loki、Jaeger、ClickHouse 配置
+├── examples
+│   Provider 配置、提示词、报告、指南示例
+├── scripts
+│   镜像入口脚本等辅助脚本
+├── build
+│   构建相关资源
+├── licenses
+│   许可证信息
+└── backend/cmd/installer/files/links
+    安装器里引用的 Compose 文件链接模板
+```
+
+
+
+## 九、observability-监控相关
+
+```
+observability/
+├── clickhouse/
+│   └── prometheus.xml
+│       # ClickHouse 的 Prometheus 指标暴露配置
+│       # 让 ClickHouse 在 9363 端口提供 /metrics
+│       # OpenTelemetry Collector 会抓这里的指标
+│
+├── grafana/
+│   ├── config/
+│   │   ├── grafana.ini
+│   │   │   # Grafana 基础配置
+│   │   │   # 默认账号：admin
+│   │   │   # 默认密码：admin
+│   │   │   # 默认首页指向 dashboards/home.json
+│   │   │
+│   │   └── provisioning/
+│   │       ├── dashboards/
+│   │       │   └── dashboard.yml
+│   │       │       # 自动加载 Grafana dashboard JSON 文件
+│   │       │       # dashboards 目录下的看板会自动出现在 Grafana
+│   │       │
+│   │       └── datasources/
+│   │           └── datasource.yml
+│   │               # Grafana 数据源配置
+│   │               # VictoriaMetrics：查指标
+│   │               # Jaeger：查链路追踪
+│   │               # Loki：查日志
+│   │               # 还配置了 trace 和 log 的互相跳转
+│   │
+│   └── dashboards/
+│       ├── home.json
+│       │   # Grafana 首页
+│       │   # 展示可用 dashboard 列表
+│       │
+│       ├── components/
+│       │   ├── pentagi_service.json
+│       │   │   # PentAGI 后端服务看板
+│       │   │   # 看 CPU、内存、Go goroutine、GC、堆内存等
+│       │   │
+│       │   └── victoriametrics.json
+│       │       # VictoriaMetrics 自身运行状态看板
+│       │       # 看指标数据库的存储、查询、写入、资源消耗
+│       │
+│       └── server/
+│           ├── docker_containers.json
+│           │   # Docker 容器资源看板
+│           │   # 看每个容器 CPU、内存、网络、IO
+│           │
+│           ├── docker_engine.json
+│           │   # Docker Engine 看板
+│           │   # 看 Docker daemon 的运行指标
+│           │
+│           └── node_exporter_full.json
+│               # 宿主机完整系统看板
+│               # 看 CPU、内存、磁盘、网络、进程、文件系统等
+│
+├── jaeger/
+│   ├── config.yml
+│   │   # Jaeger 主配置
+│   │   # 负责接收、查询、展示 trace
+│   │   # Web UI 默认容器内端口是 16686
+│   │
+│   ├── plugin-config.yml
+│   │   # Jaeger ClickHouse 存储插件配置
+│   │   # 告诉 Jaeger 把 trace 数据写入 ClickHouse
+│   │   # 默认连接 clickstore:9000
+│   │
+│   ├── sampling_strategies.json
+│   │   # Jaeger 采样策略配置
+│   │   # 控制哪些 trace 被采集
+│   │
+│   └── bin/
+│       ├── jaeger-clickhouse-linux-amd64
+│       ├── jaeger-clickhouse-linux-arm64
+│       └── SOURCE.md
+│           # Jaeger 的 ClickHouse 存储插件二进制
+│           # 根据 CPU 架构自动选择 amd64 或 arm64
+│
+├── loki/
+│   └── config.yml
+│       # Loki 日志系统配置
+│       # 使用本地文件系统存储日志 chunks 和 rules
+│       # Grafana 通过 Loki 查询日志
+│
+└── otel/
+    └── config.yml
+        # OpenTelemetry Collector 核心配置
+        # 接收 PentAGI 后端发来的 logs / metrics / traces
+        # 同时抓 node-exporter、cadvisor、ClickHouse、Jaeger、Loki、pgexporter 等指标
+        # traces 发送到 Jaeger
+        # logs 发送到 Loki
+        # metrics 发送到 VictoriaMetrics
+```
+
+
+
+## 十、Langfuse-LLM观测
 
 pentagi会让多agent进行自动渗透测试，langfuse负责记录这些agent做了什么、调用的模型、输入输出、用了多少token、有无报错、工具执行结果
 
@@ -926,7 +1283,205 @@ E:/pentest/github/pentagi-2.1.0
 
 
 
-## 十二、Graphiti-知识图谱相关功能-配合Neo4j-向量数据库
+## 十一、Graphiti-知识图谱相关功能-配合Neo4j-向量数据库
 
+整体架构
 
+```
+PentAGI Go 后端
+  |
+  | 1. 调用 Graphiti API：写入/查询图谱
+  v
+Graphiti 服务
+  |
+  | 2. 用 OpenAI-compatible LLM 做实体/关系抽取
+  v
+Neo4j
+  |
+  | 3. 存实体、关系、时间上下文
+  v
+知识图谱查询结果返回给 agent
+
+PentAGI Go 后端
+  |
+  | 调用 Embedding Provider 生成向量
+  v
+PostgreSQL + pgvector
+  |
+  | 存 document + embedding + cmetadata
+  v
+memory / guide / answer / code 语义检索
+```
+
+目录
+
+```
+docker-compose-graphiti.yml
+  Graphiti + Neo4j 服务定义。
+
+backend/pkg/config/config.go
+  GRAPHITI_ENABLED / GRAPHITI_TIMEOUT / GRAPHITI_URL 配置。
+
+backend/pkg/graphiti/client.go
+  PentAGI 对 graphiti-go-client 的封装。
+
+backend/pkg/providers/providers.go
+  启动时初始化 Graphiti client；失败则降级，不阻塞主服务。
+
+backend/pkg/providers/performer.go
+  agent 响应和工具执行自动写入 Graphiti 的核心逻辑。
+
+backend/pkg/templates/graphiti/
+  写入 Graphiti 前的文本模板。
+
+backend/pkg/tools/graphiti_search.go
+  agent 查询 Graphiti 的工具实现。
+
+backend/pkg/tools/registry.go
+  graphiti_search 工具 schema 和描述。
+
+backend/migrations/sql/20260501_120000_knowledge.sql
+  pgvector 知识库表结构和清理逻辑。
+
+backend/pkg/database/knowledge/
+  pgvector 知识库 CRUD / 语义搜索逻辑。
+
+frontend/src/providers/knowledges-provider.tsx
+  前端知识库页面的数据层，走 GraphQL 查询 pgvector。
+```
+
+两套独立存储-互补使用
+
+```
+Graphiti + Neo4j：实体--关系，知识图谱存储
+PostgreSQL + pgvector：向量数据库存储
+
+Graphiti 负责“发生过什么、东西之间有什么关系”
+pgvector 负责“有没有相似的知识、文档、代码、指南”
+```
+
+### 1.Graphiti + Neo4j：知识图谱存储
+
+重点是“实体”和“关系”
+
+实体：
+
+```
+IP 地址
+域名
+端口
+服务
+漏洞
+工具
+命令
+技术手法
+agent 响应
+工具执行记录
+```
+
+关系：
+
+```
+某 IP 开放某端口
+某端口运行某服务
+某工具发现某目标
+某漏洞影响某服务
+某技术利用某漏洞
+某次工具执行成功或失败
+```
+
+Graphiti ：pentagi-2.1.0/backend/pkg/graphiti/client.go，封装 Graphiti 客户端
+
+```
+知识图谱服务，PentAGI 后端不会直接操作 Neo4j，而是调用 Graphiti API
+
+接收 PentAGI 发来的文本
+调用 LLM 抽取实体和关系
+把实体和关系写入 Neo4j
+对外提供图谱查询 API
+
+存：按照flow分组写入
+1.agent 的回答--函数storeAgentResponseToGraphiti
+pentagi-2.1.0/backend/pkg/providers/performer.go
+模板：pentagi-2.1.0/backend/pkg/templates/graphiti/agent_response.tmpl
+2.工具执行记录--函数storeToolExecutionToGraphiti
+模板：pentagi-2.1.0/backend/pkg/templates/graphiti/tool_execution.tmpl
+
+查：pentagi-2.1.0/backend/pkg/tools/graphiti_search.go
+```
+
+Neo4j ：真正保存图数据的数据库
+
+```
+保存节点
+保存边
+保存节点之间的关系
+支持图遍历
+支持按关系查上下文
+```
+
+关系：
+
+```
+PentAGI 后端 -> Graphiti API -> Neo4j
+```
+
+### 2.PostgreSQL + pgvector：向量数据库存储
+
+核心逻辑：
+
+```
+文本 -> embedding 向量 -> 存进 PostgreSQL
+查询文本 -> embedding 向量 -> 和库里的向量做相似度比较
+```
+
+embedding：**把一段文字转换成一串数字向量**，让数据库可以计算“语义相似度”
+
+```
+文本 A: nmap discovered SSH and HTTP services
+文本 B: target has open port 22 and web service
+转：
+A -> [0.12, -0.08, 0.44, ...]
+B -> [0.10, -0.07, 0.41, ...]
+
+计算这两串数字的距离，距离越近，说明语义越相似
+```
+
+pgvector：pentagi-2.1.0/backend/migrations/sql/20260501_120000_knowledge.sql
+
+pgvector 的知识库 API：pentagi-2.1.0/backend/pkg/database/knowledge/knowledge.go
+
+```
+创建知识文档
+更新知识文档
+删除知识文档
+列出知识文档
+语义搜索知识文档
+```
+
+流程：
+
+```
+用户创建 Flow
+  |
+  v
+PentAGI agent 开始执行
+  |
+  |-- 查询 Graphiti ------------------> Graphiti API --> Neo4j
+  |                                     返回事件/实体/关系
+  |
+  |-- 查询 pgvector ------------------> Embedding --> PostgreSQL pgvector
+  |                                     返回相似文本
+  |
+  |-- 执行 terminal/browser/search
+  |
+  |-- 工具执行记录 -------------------> Graphiti --> Neo4j
+  |                                     保存图谱事件和关系
+  |
+  |-- 工具结果文本 -------------------> Embedding --> pgvector
+  |                                     保存 memory 文本块
+  |
+  |-- agent 主动 store_guide/code/answer
+                                        保存可复用知识到 pgvector
+```
 
