@@ -152,7 +152,7 @@ http.request.uri contains "/uploads/test1.php"
 
 报文请求和返回包进行解密，可以看到请求方对网站的行为操作
 
-![image-20260722201020457](C:/Users/mml/AppData/Roaming/Typora/typora-user-images/image-20260722201020457.png)
+![](https://img.xiaoyuwell.top/PicGo/20260723115008140.png)
 
 请求方在执行命令后回显内容
 
