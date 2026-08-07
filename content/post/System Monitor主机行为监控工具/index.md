@@ -2,7 +2,7 @@
 title: Sysmon：从原理到实战的 Windows 主机行为监控
 description: "系统讲解 Sysmon 的定位、工作原理、事件模型、安装配置、日志分析、威胁狩猎、调优方法与常见误区。"
 slug: sysmon-host-behavior-monitoring
-date: 2026-07-27
+date: 
 image:
 categories:
     - 安全工具
