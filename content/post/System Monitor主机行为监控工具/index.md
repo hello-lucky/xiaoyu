@@ -5,7 +5,7 @@ slug: sysmon-host-behavior-monitoring
 date: 
 image:
 categories:
-    - 安全工具
+    - 应急响应
 tags:
     - Sysmon
     - Windows安全

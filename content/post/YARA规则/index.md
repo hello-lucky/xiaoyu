@@ -5,7 +5,7 @@ slug: "yara-php-webshell-detection"
 date: 
 image:
 categories:
-    - 安全工具
+    - 应急响应
 tags:
     - YARA
     - WebShell
